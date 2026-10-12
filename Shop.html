@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VELO — Curated Lifestyle Store</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"Space Grotesk"', 'sans-serif'],
+            body: ['"DM Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              bg: '#0C0C0C',
+              surface: '#161616',
+              card: '#1E1E1E',
+              border: '#2A2A2A',
+              muted: '#6B6B6B',
+              text: '#F0EDE8',
+              cream: '#F5F0E8',
+              coral: '#FF6B4A',
+              gold: '#D4A853',
+              mint: '#4AE3B5',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --coral: #FF6B4A;
+      --gold: #D4A853;
+      --mint: #4AE3B5;
+      --bg: #0C0C0C;
+      --surface: #161616;
+      --text: #F0EDE8;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { background: var(--bg); }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--coral); border-radius: 3px; }
+
+    /* Hero floating blobs */
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.4;
+      animation: blobFloat 8s ease-in-out infinite alternate;
+    }
+    .blob-1 { width: 400px; height: 400px; background: var(--coral); top: -10%; left: -5%; animation-delay: 0s; }
+    .blob-2 { width: 350px; height: 350px; background: var(--gold); top: 20%; right: -8%; animation-delay: -3s; }
+    .blob-3 { width: 300px; height: 300px; background: var(--mint); bottom: -5%; left: 30%; animation-delay: -5s; }
+
+    @keyframes blobFloat {
+      0% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -20px) scale(1.05); }
+      66% { transform: translate(-20px, 15px) scale(0.95); }
+      100% { transform: translate(10px, -10px) scale(1.02); }
+    }
+
+    /* Marquee */
+    .marquee-track {
+      display: flex;
+      animation: marquee 25s linear infinite;
+    }
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* Product card hover */
+    .product-card {
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+    }
+    .product-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 60px rgba(255, 107, 74, 0.12);
+    }
+    .product-card .card-img {
+      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .product-card:hover .card-img {
+      transform: scale(1.08);
+    }
+    .product-card .quick-add {
+      opacity: 0; transform: translateY(10px);
+      transition: all 0.3s ease;
+    }
+    .product-card:hover .quick-add {
+      opacity: 1; transform: translateY(0);
+    }
+
+    /* Category pill */
+    .cat-pill {
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .cat-pill::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--coral);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+      border-radius: 9999px;
+    }
+    .cat-pill.active::before { transform: scaleX(1); }
+    .cat-pill.active { color: #fff; border-color: var(--coral); }
+    .cat-pill span { position: relative; z-index: 1; }
+
+    /* Slide-in animation */
+    .slide-up {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .slide-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Cart drawer */
+    .cart-overlay {
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .cart-overlay.open { opacity: 1; pointer-events: auto; }
+    .cart-drawer {
+      transform: translateX(100%);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .cart-drawer.open { transform: translateX(0); }
+
+    /* Toast */
+    .toast {
+      animation: toastIn 0.4s ease forwards, toastOut 0.4s ease 2s forwards;
+    }
+    @keyframes toastIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes toastOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+
+    /* Ticker tape */
+    .ticker-wrap { overflow: hidden; white-space: nowrap; }
+    .ticker {
+      display: inline-block;
+      animation: ticker 20s linear infinite;
+    }
+    @keyframes ticker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* Shiny button */
+    .btn-shiny {
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-shiny::after {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.12) 50%, transparent 60%);
+      animation: shine 3s ease-in-out infinite;
+    }
+    @keyframes shine {
+      0% { transform: translateX(-100%) rotate(45deg); }
+      100% { transform: translateX(100%) rotate(45deg); }
+    }
+
+    /* Badge pulse */
+    .badge-pulse { animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+
+    /* Floating tag */
+    .float-tag {
+      animation: floatTag 4s ease-in-out infinite alternate;
+    }
+    @keyframes floatTag {
+      0% { transform: translateY(0) rotate(-2deg); }
+      100% { transform: translateY(-12px) rotate(2deg); }
+    }
+
+    /* Grid pattern bg */
+    .grid-pattern {
+      background-image:
+        linear-gradient(rgba(255,107,74,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,107,74,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    /* Star rating */
+    .star-filled { color: var(--gold); }
+    .star-empty { color: #2A2A2A; }
+
+    /* Nav link underline */
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -2px; left: 0;
+      width: 0; height: 2px;
+      background: var(--coral);
+      transition: width 0.3s ease;
+    }
+    .nav-link:hover::after { width: 100%; }
+
+    /* Search modal */
+    .search-modal {
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .search-modal.open { opacity: 1; pointer-events: auto; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body class="grid-pattern">
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed top-6 right-6 z-[200] flex flex-col gap-3"></div>
+
+  <!-- Search Modal -->
+  <div id="searchModal" class="search-modal fixed inset-0 z-[150] flex items-start justify-center pt-32" style="background:rgba(12,12,12,0.92);backdrop-filter:blur(12px);">
+    <div class="w-full max-w-2xl mx-4">
+      <div class="relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-brand-muted text-xl"></i>
+        <input id="searchInput" type="text" placeholder="Search products..." class="w-full bg-brand-surface border border-brand-border rounded-2xl py-5 pl-14 pr-14 text-xl text-brand-text placeholder-brand-muted focus:outline-none focus:border-brand-coral transition-colors font-body" />
+        <button onclick="toggleSearch()" class="absolute right-5 top-1/2 -translate-y-1/2 text-brand-muted hover:text-brand-coral transition-colors">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+      <div id="searchResults" class="mt-4 max-h-80 overflow-y-auto rounded-2xl bg-brand-surface border border-brand-border hidden"></div>
+    </div>
+  </div>
+
+  <!-- Cart Overlay -->
+  <div id="cartOverlay" class="cart-overlay fixed inset-0 z-[100]" style="background:rgba(12,12,12,0.7);backdrop-filter:blur(4px);" onclick="toggleCart()"></div>
+
+  <!-- Cart Drawer -->
+  <div id="cartDrawer" class="cart-drawer fixed top-0 right-0 h-full w-full max-w-md z-[110] bg-brand-surface border-l border-brand-border flex flex-col">
+    <div class="flex items-center justify-between p-6 border-b border-brand-border">
+      <h2 class="font-display text-2xl font-bold">Your Cart</h2>
+      <button onclick="toggleCart()" class="w-10 h-10 rounded-full bg-brand-card flex items-center justify-center hover:bg-brand-coral transition-colors" aria-label="Close cart">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div id="cartItems" class="flex-1 overflow-y-auto p-6 space-y-4"></div>
+    <div id="cartFooter" class="p-6 border-t border-brand-border hidden">
+      <div class="flex justify-between items-center mb-4">
+        <span class="text-brand-muted">Subtotal</span>
+        <span id="cartTotal" class="font-display text-2xl font-bold text-brand-coral">$0</span>
+      </div>
+      <button onclick="checkout()" class="btn-shiny w-full py-4 rounded-xl bg-brand-coral text-white font-display font-bold text-lg hover:brightness-110 transition-all">
+        Checkout <i class="fa-solid fa-arrow-right ml-2"></i>
+      </button>
+      <p class="text-center text-brand-muted text-sm mt-3">Free shipping on orders over $100</p>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" id="mainNav">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <!-- Logo -->
+      <a href="#" class="font-display text-3xl font-bold tracking-tight">
+        V<span class="text-brand-coral">E</span>LO
+      </a>
+      <!-- Nav Links (desktop) -->
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#shop" class="nav-link relative text-sm font-medium text-brand-text hover:text-brand-coral transition-colors">Shop</a>
+        <a href="#categories" class="nav-link relative text-sm font-medium text-brand-text hover:text-brand-coral transition-colors">Categories</a>
+        <a href="#featured" class="nav-link relative text-sm font-medium text-brand-text hover:text-brand-coral transition-colors">Featured</a>
+        <a href="#about" class="nav-link relative text-sm font-medium text-brand-text hover:text-brand-coral transition-colors">About</a>
+      </div>
+      <!-- Actions -->
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSearch()" class="w-10 h-10 rounded-full bg-brand-card flex items-center justify-center hover:bg-brand-coral transition-colors" aria-label="Search">
+          <i class="fa-solid fa-magnifying-glass text-sm"></i>
+        </button>
+        <button onclick="toggleCart()" class="w-10 h-10 rounded-full bg-brand-card flex items-center justify-center hover:bg-brand-coral transition-colors relative" aria-label="Cart">
+          <i class="fa-solid fa-bag-shopping text-sm"></i>
+          <span id="cartBadge" class="badge-pulse absolute -top-1 -right-1 w-5 h-5 bg-brand-coral rounded-full text-[10px] font-bold flex items-center justify-center hidden">0</span>
+        </button>
+        <!-- Mobile menu -->
+        <button onclick="toggleMobileMenu()" class="md:hidden w-10 h-10 rounded-full bg-brand-card flex items-center justify-center hover:bg-brand-coral transition-colors" aria-label="Menu">
+          <i class="fa-solid fa-bars text-sm"></i>
+        </button>
+      </div>
+    </div>
+    <!-- Mobile dropdown -->
+    <div id="mobileMenu" class="md:hidden hidden bg-brand-surface border-t border-brand-border px-6 py-4 space-y-3">
+      <a href="#shop" class="block text-sm font-medium hover:text-brand-coral transition-colors">Shop</a>
+      <a href="#categories" class="block text-sm font-medium hover:text-brand-coral transition-colors">Categories</a>
+      <a href="#featured" class="block text-sm font-medium hover:text-brand-coral transition-colors">Featured</a>
+      <a href="#about" class="block text-sm font-medium hover:text-brand-coral transition-colors">About</a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="relative min-h-screen flex items-center overflow-hidden">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="max-w-7xl mx-auto px-6 pt-24 pb-16 grid lg:grid-cols-2 gap-12 items-center relative z-10 w-full">
+      <div class="slide-up">
+        <div class="inline-flex items-center gap-2 bg-brand-card border border-brand-border rounded-full px-4 py-2 mb-6 float-tag">
+          <span class="w-2 h-2 rounded-full bg-brand-mint animate-pulse"></span>
+          <span class="text-sm text-brand-muted">New Season Collection 2025</span>
+        </div>
+        <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] mb-6">
+          Define<br/>
+          <span class="text-brand-coral">Your</span><br/>
+          Style
+        </h1>
+        <p class="text-lg text-brand-muted max-w-md mb-8 leading-relaxed">
+          Curated essentials for the modern lifestyle. Every piece selected for quality, design, and purpose.
+        </p>
+        <div class="flex flex-wrap gap-4">
+          <a href="#shop" class="btn-shiny inline-flex items-center gap-3 bg-brand-coral px-8 py-4 rounded-xl font-display font-bold text-white hover:brightness-110 transition-all">
+            Explore Collection
+            <i class="fa-solid fa-arrow-right"></i>
+          </a>
+          <a href="#about" class="inline-flex items-center gap-3 bg-brand-card border border-brand-border px-8 py-4 rounded-xl font-display font-medium hover:border-brand-coral transition-colors">
+            Our Story
+          </a>
+        </div>
+        <!-- Stats -->
+        <div class="flex gap-8 mt-12">
+          <div>
+            <div class="font-display text-3xl font-bold text-brand-gold">12K+</div>
+            <div class="text-sm text-brand-muted">Happy Customers</div>
+          </div>
+          <div>
+            <div class="font-display text-3xl font-bold text-brand-mint">350+</div>
+            <div class="text-sm text-brand-muted">Products</div>
+          </div>
+          <div>
+            <div class="font-display text-3xl font-bold text-brand-coral">4.9</div>
+            <div class="text-sm text-brand-muted">Avg Rating</div>
+          </div>
+        </div>
+      </div>
+      <!-- Hero visual -->
+      <div class="slide-up relative hidden lg:block" style="transition-delay:0.15s">
+        <div class="relative">
+          <div class="absolute -inset-4 bg-gradient-to-br from-brand-coral/20 via-transparent to-brand-gold/20 rounded-3xl blur-2xl"></div>
+          <img src="https://picsum.photos/seed/velo-hero/600/700.jpg" alt="Hero product" class="relative rounded-3xl w-full object-cover shadow-2xl" style="max-height:600px;" />
+          <!-- Floating price tag -->
+          <div class="absolute -left-6 top-1/3 bg-brand-surface border border-brand-border rounded-2xl p-4 shadow-xl float-tag" style="animation-delay:-1s">
+            <div class="text-xs text-brand-muted mb-1">Best Seller</div>
+            <div class="font-display text-xl font-bold text-brand-coral">$89</div>
+          </div>
+          <!-- Floating review tag -->
+          <div class="absolute -right-4 bottom-1/4 bg-brand-surface border border-brand-border rounded-2xl p-4 shadow-xl float-tag" style="animation-delay:-2.5s">
+            <div class="flex gap-1 mb-1">
+              <i class="fa-solid fa-star text-brand-gold text-xs"></i>
+              <i class="fa-solid fa-star text-brand-gold text-xs"></i>
+              <i class="fa-solid fa-star text-brand-gold text-xs"></i>
+              <i class="fa-solid fa-star text-brand-gold text-xs"></i>
+              <i class="fa-solid fa-star text-brand-gold text-xs"></i>
+            </div>
+            <div class="text-xs text-brand-muted">2.4k reviews</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Scroll indicator -->
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce z-10">
+      <span class="text-xs text-brand-muted">Scroll</span>
+      <i class="fa-solid fa-chevron-down text-brand-coral text-sm"></i>
+    </div>
+  </header>
+
+  <!-- Ticker Tape -->
+  <div class="bg-brand-coral py-3 ticker-wrap">
+    <div class="ticker">
+      <span class="inline-flex items-center gap-8 mx-8 font-display font-bold text-white text-sm tracking-widest uppercase">
+        <span>Free Shipping Over $100</span><span class="text-white/40">&#9670;</span>
+        <span>New Arrivals Weekly</span><span class="text-white/40">&#9670;</span>
+        <span>30-Day Returns</span><span class="text-white/40">&#9670;</span>
+        <span>Sustainable Materials</span><span class="text-white/40">&#9670;</span>
+        <span>Handcrafted Quality</span><span class="text-white/40">&#9670;</span>
+        <span>Free Shipping Over $100</span><span class="text-white/40">&#9670;</span>
+        <span>New Arrivals Weekly</span><span class="text-white/40">&#9670;</span>
+        <span>30-Day Returns</span><span class="text-white/40">&#9670;</span>
+        <span>Sustainable Materials</span><span class="text-white/40">&#9670;</span>
+        <span>Handcrafted Quality</span><span class="text-white/40">&#9670;</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Categories Section -->
+  <section id="categories" class="py-24">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="slide-up text-center mb-16">
+        <span class="text-brand-coral font-display font-medium text-sm tracking-widest uppercase">Browse</span>
+        <h2 class="font-display text-4xl sm:text-5xl font-bold mt-2">Shop by Category</h2>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 slide-up">
+        <div class="group relative overflow-hidden rounded-2xl cursor-pointer aspect-[3/4]" onclick="filterByCategory('Apparel')">
+          <img src="https://picsum.photos/seed/cat-apparel/400/500.jpg" alt="Apparel" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+          <div class="absolute bottom-4 left-4">
+            <h3 class="font-display text-xl font-bold">Apparel</h3>
+            <span class="text-sm text-brand-muted">86 items</span>
+          </div>
+        </div>
+        <div class="group relative overflow-hidden rounded-2xl cursor-pointer aspect-[3/4]" onclick="filterByCategory('Accessories')">
+          <img src="https://picsum.photos/seed/cat-access/400/500.jpg" alt="Accessories" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+          <div class="absolute bottom-4 left-4">
+            <h3 class="font-display text-xl font-bold">Accessories</h3>
+            <span class="text-sm text-brand-muted">64 items</span>
+          </div>
+        </div>
+        <div class="group relative overflow-hidden rounded-2xl cursor-pointer aspect-[3/4]" onclick="filterByCategory('Home')">
+          <img src="https://picsum.photos/seed/cat-home/400/500.jpg" alt="Home" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+          <div class="absolute bottom-4 left-4">
+            <h3 class="font-display text-xl font-bold">Home</h3>
+            <span class="text-sm text-brand-muted">52 items</span>
+          </div>
+        </div>
+        <div class="group relative overflow-hidden rounded-2xl cursor-pointer aspect-[3/4]" onclick="filterByCategory('Footwear')">
+          <img src="https://picsum.photos/seed/cat-foot/400/500.jpg" alt="Footwear" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+          <div class="absolute bottom-4 left-4">
+            <h3 class="font-display text-xl font-bold">Footwear</h3>
+            <span class="text-sm text-brand-muted">38 items</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Shop / Products Section -->
+  <section id="shop" class="py-24 bg-brand-surface">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="slide-up flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+        <div>
+          <span class="text-brand-coral font-display font-medium text-sm tracking-widest uppercase">Collection</span>
+          <h2 class="font-display text-4xl sm:text-5xl font-bold mt-2">All Products</h2>
+        </div>
+        <!-- Sort -->
+        <select id="sortSelect" onchange="renderProducts()" class="bg-brand-card border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-coral cursor-pointer">
+          <option value="featured">Featured</option>
+          <option value="price-low">Price: Low to High</option>
+          <option value="price-high">Price: High to Low</option>
+          <option value="rating">Top Rated</option>
+          <option value="newest">Newest</option>
+        </select>
+      </div>
+      <!-- Filter pills -->
+      <div class="slide-up flex flex-wrap gap-3 mb-10" id="filterPills"></div>
+      <!-- Product grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="productGrid"></div>
+    </div>
+  </section>
+
+  <!-- Featured / Banner Section -->
+  <section id="featured" class="py-24">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="slide-up relative overflow-hidden rounded-3xl bg-brand-card border border-brand-border">
+        <div class="absolute inset-0">
+          <img src="https://picsum.photos/seed/velo-banner/1400/500.jpg" alt="Featured" class="w-full h-full object-cover opacity-30" />
+          <div class="absolute inset-0 bg-gradient-to-r from-brand-bg/90 via-brand-bg/60 to-transparent"></div>
+        </div>
+        <div class="relative z-10 p-10 sm:p-16 max-w-xl">
+          <span class="inline-block bg-brand-gold/20 text-brand-gold font-display font-bold text-xs tracking-widest uppercase px-3 py-1.5 rounded-full mb-4">Limited Edition</span>
+          <h2 class="font-display text-4xl sm:text-5xl font-bold leading-tight mb-4">The Midnight<br/>Collection</h2>
+          <p class="text-brand-muted mb-6 leading-relaxed">Handcrafted pieces inspired by the quiet hours. Only 200 sets available worldwide. Each piece numbered and certified.</p>
+          <button onclick="addToCart({id:999,name:'Midnight Collection Box',price:249,category:'Featured',img:'https://picsum.photos/seed/midnight-box/400/400.jpg',rating:5,badge:'Limited'})" class="btn-shiny inline-flex items-center gap-3 bg-brand-gold px-8 py-4 rounded-xl font-display font-bold text-brand-bg hover:brightness-110 transition-all">
+            Pre-Order Now — $249
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="py-24 bg-brand-surface">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="slide-up text-center mb-16">
+        <span class="text-brand-coral font-display font-medium text-sm tracking-widest uppercase">Reviews</span>
+        <h2 class="font-display text-4xl sm:text-5xl font-bold mt-2">Loved by Thousands</h2>
+      </div>
+      <div class="grid md:grid-cols-3 gap-6 slide-up">
+        <div class="bg-brand-card border border-brand-border rounded-2xl p-8 hover:border-brand-coral/30 transition-colors">
+          <div class="flex gap-1 mb-4"><i class="fa-solid fa-star star-filled text-sm"></i><i class="fa-solid fa-star star-filled text-sm"></i><i class="fa-solid fa-star star-filled text-sm"></i><i class="fa-solid fa-star star-filled text-sm"></i><i class="fa-solid fa-star star-filled text-sm"></i></div>
+          <p class="text-brand-text/80 mb-6 leading-relaxed">"The quality is unmatched. I've been wearing my VELO jacket for 6 months and it still looks brand new. Absolutely worth every penny."</p>
+          <div class="flex items-center gap-3">
+            <img src="https://picsum.photos/seed/user1/80/80.jpg" alt="Sarah" class="w-10 h-10 rounded-full object-cover" />
+            <div>
+              <div class="font-display font-bold text-sm">Sarah Mitchell</div>
+              <div class="text-xs text-brand-muted">Verified Buyer</div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-brand-card border border-brand-border rounded-2xl p-8 hover:border-brand-gold/30 transition-colors">
+          <div class="flex gap-1 mb-4"><i class="fa-solid fa-star star-filled text-sm"></i><i class="fa-solid fa-star star-filled text-sm"></i><i class="fa-solid fa-star star-filled text-sm"></i><i class="fa-solid fa-star star-filled text-sm"></i><i class="fa-solid fa-star star-filled text-sm"></i></div>
+          <p class="text-brand-text/80 mb-6 leading-relaxed">"Finally a store that understands minimal design without sacrificing functionality. The home collection transformed my apartment."</p>
+          <div class="flex items-center gap-3">
+            <img src="https://picsum.photos/seed/user2/80/80.jpg" alt="James" class="w-10 h-10 rounded-full object-cover" />
+            <div>
+              <div class="font-display font-bold text-sm">James Park</div>
+              <div class="text-xs text-brand-muted">Verified Buyer</div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-brand-card border border-brand-border rounded-2xl p-8 hover:border-brand-mint/30 transition-colors">
+          <div class="flex gap-1 mb-4"><i class="fa-solid fa-star star-filled text-sm"></i><i class="fa-solid fa-star star-filled text-sm"></i><i class="fa-solid fa-star star-filled text-sm"></i><i class="fa-solid fa-star star-filled text-sm"></i><i class="fa-solid fa-star star-empty text-sm"></i></div>
+          <p class="text-brand-text/80 mb-6 leading-relaxed">"Shipping was incredibly fast and the packaging felt premium. The leather bag I ordered is now my everyday carry. Beautiful craftsmanship."</p>
+          <div class="flex items-center gap-3">
+            <img src="https://picsum.photos/seed/user3/80/80.jpg" alt="Elena" class="w-10 h-10 rounded-full object-cover" />
+            <div>
+              <div class="font-display font-bold text-sm">Elena Rossi</div>
+              <div class="text-xs text-brand-muted">Verified Buyer</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About / Brand Story -->
+  <section id="about" class="py-24">
+    <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
+      <div class="slide-up relative">
+        <img src="https://picsum.photos/seed/velo-story/600/700.jpg" alt="Our Story" class="rounded-3xl w-full object-cover shadow-2xl" style="max-height:550px;" />
+        <div class="absolute -bottom-6 -right-6 bg-brand-coral rounded-2xl p-6 shadow-xl">
+          <div class="font-display text-4xl font-bold text-white">Since</div>
+          <div class="font-display text-4xl font-bold text-white">2019</div>
+        </div>
+      </div>
+      <div class="slide-up" style="transition-delay:0.1s">
+        <span class="text-brand-coral font-display font-medium text-sm tracking-widest uppercase">Our Story</span>
+        <h2 class="font-display text-4xl sm:text-5xl font-bold mt-2 mb-6">Crafted with<br/>Intention</h2>
+        <p class="text-brand-muted leading-relaxed mb-4">VELO was born from a simple belief: the things you surround yourself with should be both beautiful and built to last. We partner directly with artisans and ethical manufacturers who share our obsession with quality.</p>
+        <p class="text-brand-muted leading-relaxed mb-8">Every product in our collection passes a 40-point quality assessment before it earns the VELO label. No fast fashion. No disposable design. Just pieces that get better with time.</p>
+        <div class="grid grid-cols-3 gap-6">
+          <div class="text-center">
+            <div class="w-14 h-14 rounded-2xl bg-brand-card border border-brand-border flex items-center justify-center mx-auto mb-3">
+              <i class="fa-solid fa-leaf text-brand-mint text-xl"></i>
+            </div>
+            <div class="text-sm font-medium">Sustainable</div>
+          </div>
+          <div class="text-center">
+            <div class="w-14 h-14 rounded-2xl bg-brand-card border border-brand-border flex items-center justify-center mx-auto mb-3">
+              <i class="fa-solid fa-hand-sparkles text-brand-gold text-xl"></i>
+            </div>
+            <div class="text-sm font-medium">Handcrafted</div>
+          </div>
+          <div class="text-center">
+            <div class="w-14 h-14 rounded-2xl bg-brand-card border border-brand-border flex items-center justify-center mx-auto mb-3">
+              <i class="fa-solid fa-shield-halved text-brand-coral text-xl"></i>
+            </div>
+            <div class="text-sm font-medium">Guaranteed</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Newsletter -->
+  <section class="py-24 bg-brand-surface">
+    <div class="max-w-3xl mx-auto px-6 text-center slide-up">
+      <span class="text-brand-coral font-display font-medium text-sm tracking-widest uppercase">Stay Updated</span>
+      <h2 class="font-display text-4xl sm:text-5xl font-bold mt-2 mb-4">Join the Community</h2>
+      <p class="text-brand-muted mb-8">Get early access to new drops, exclusive offers, and style inspiration. No spam, ever.</p>
+      <form onsubmit="handleNewsletter(event)" class="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
+        <input id="emailInput" type="email" required placeholder="your@email.com" class="flex-1 bg-brand-card border border-brand-border rounded-xl px-5 py-4 text-brand-text placeholder-brand-muted focus:outline-none focus:border-brand-coral transition-colors" />
+        <button type="submit" class="btn-shiny bg-brand-coral px-8 py-4 rounded-xl font-display font-bold text-white hover:brightness-110 transition-all whitespace-nowrap">
+          Subscribe
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-16 border-t border-brand-border">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+        <div>
+          <div class="font-display text-3xl font-bold mb-4">V<span class="text-brand-coral">E</span>LO</div>
+          <p class="text-brand-muted text-sm leading-relaxed">Curated essentials for the modern lifestyle. Quality over quantity, always.</p>
+          <div class="flex gap-3 mt-6">
+            <a href="#" class="w-9 h-9 rounded-full bg-brand-card flex items-center justify-center hover:bg-brand-coral transition-colors" aria-label="Instagram"><i class="fa-brands fa-instagram text-sm"></i></a>
+            <a href="#" class="w-9 h-9 rounded-full bg-brand-card flex items-center justify-center hover:bg-brand-coral transition-colors" aria-label="Twitter"><i class="fa-brands fa-x-twitter text-sm"></i></a>
+            <a href="#" class="w-9 h-9 rounded-full bg-brand-card flex items-center justify-center hover:bg-brand-coral transition-colors" aria-label="Pinterest"><i class="fa-brands fa-pinterest text-sm"></i></a>
+            <a href="#" class="w-9 h-9 rounded-full bg-brand-card flex items-center justify-center hover:bg-brand-coral transition-colors" aria-label="YouTube"><i class="fa-brands fa-youtube text-sm"></i></a>
+          </div>
+        </div>
+        <div>
+          <h4 class="font-display font-bold mb-4">Shop</h4>
+          <div class="space-y-2 text-sm text-brand-muted">
+            <a href="#" class="block hover:text-brand-coral transition-colors">New Arrivals</a>
+            <a href="#" class="block hover:text-brand-coral transition-colors">Best Sellers</a>
+            <a href="#" class="block hover:text-brand-coral transition-colors">Sale</a>
+            <a href="#" class="block hover:text-brand-coral transition-colors">Gift Cards</a>
+          </div>
+        </div>
+        <div>
+          <h4 class="font-display font-bold mb-4">Company</h4>
+          <div class="space-y-2 text-sm text-brand-muted">
+            <a href="#" class="block hover:text-brand-coral transition-colors">About Us</a>
+            <a href="#" class="block hover:text-brand-coral transition-colors">Careers</a>
+            <a href="#" class="block hover:text-brand-coral transition-colors">Sustainability</a>
+            <a href="#" class="block hover:text-brand-coral transition-colors">Press</a>
+          </div>
+        </div>
+        <div>
+          <h4 class="font-display font-bold mb-4">Support</h4>
+          <div class="space-y-2 text-sm text-brand-muted">
+            <a href="#" class="block hover:text-brand-coral transition-colors">Help Center</a>
+            <a href="#" class="block hover:text-brand-coral transition-colors">Shipping</a>
+            <a href="#" class="block hover:text-brand-coral transition-colors">Returns</a>
+            <a href="#" class="block hover:text-brand-coral transition-colors">Contact</a>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-brand-border pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <p class="text-sm text-brand-muted">&copy; 2025 VELO. All rights reserved.</p>
+        <div class="flex gap-4">
+          <i class="fa-brands fa-cc-visa text-2xl text-brand-muted"></i>
+          <i class="fa-brands fa-cc-mastercard text-2xl text-brand-muted"></i>
+          <i class="fa-brands fa-cc-amex text-2xl text-brand-muted"></i>
+          <i class="fa-brands fa-cc-apple-pay text-2xl text-brand-muted"></i>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    /* ===================== DATA ===================== */
+    const products = [
+      { id: 1, name: 'Aura Knit Jacket', price: 129, category: 'Apparel', img: 'https://picsum.photos/seed/p1/400/500.jpg', rating: 4.8, badge: 'New' },
+      { id: 2, name: 'Terra Leather Bag', price: 189, category: 'Accessories', img: 'https://picsum.photos/seed/p2/400/500.jpg', rating: 4.9, badge: 'Best Seller' },
+      { id: 3, name: 'Nimbus Running Shoe', price: 149, category: 'Footwear', img: 'https://picsum.photos/seed/p3/400/500.jpg', rating: 4.7, badge: null },
+      { id: 4, name: 'Copper Desk Lamp', price: 79, category: 'Home', img: 'https://picsum.photos/seed/p4/400/500.jpg', rating: 4.6, badge: null },
+      { id: 5, name: 'Drift Linen Shirt', price: 89, category: 'Apparel', img: 'https://picsum.photos/seed/p5/400/500.jpg', rating: 4.5, badge: 'New' },
+      { id: 6, name: 'Onyx Sunglasses', price: 65, category: 'Accessories', img: 'https://picsum.photos/seed/p6/400/500.jpg', rating: 4.8, badge: null },
+      { id: 7, name: 'Mist Ceramic Vase', price: 45, category: 'Home', img: 'https://picsum.photos/seed/p7/400/500.jpg', rating: 4.4, badge: null },
+      { id: 8, name: 'Stride Trail Boot', price: 175, category: 'Footwear', img: 'https://picsum.photos/seed/p8/400/500.jpg', rating: 4.9, badge: 'Best Seller' },
+      { id: 9, name: 'Haze Wool Scarf', price: 55, category: 'Accessories', img: 'https://picsum.photos/seed/p9/400/500.jpg', rating: 4.3, badge: null },
+      { id: 10, name: 'Flux Canvas Tote', price: 39, category: 'Accessories', img: 'https://picsum.photos/seed/p10/400/500.jpg', rating: 4.6, badge: null },
+      { id: 11, name: 'Ember Candle Set', price: 32, category: 'Home', img: 'https://picsum.photos/seed/p11/400/500.jpg', rating: 4.7, badge: 'New' },
+      { id: 12, name: 'Vortex Windbreaker', price: 145, category: 'Apparel', img: 'https://picsum.photos/seed/p12/400/500.jpg', rating: 4.8, badge: null },
+    ];
+
+    const categories = ['All', 'Apparel', 'Accessories', 'Home', 'Footwear'];
+    let activeCategory = 'All';
+    let cart = [];
+
+    /* ===================== RENDER ===================== */
+    function renderFilterPills() {
+      const container = document.getElementById('filterPills');
+      container.innerHTML = categories.map(cat =>
+        `<button class="cat-pill ${activeCategory === cat ? 'active' : ''} border border-brand-border rounded-full px-5 py-2.5 text-sm font-medium font-display" onclick="setCategory('${cat}')"><span>${cat}</span></button>`
+      ).join('');
+    }
+
+    function getFilteredSorted() {
+      let filtered = activeCategory === 'All' ? [...products] : products.filter(p => p.category === activeCategory);
+      const sort = document.getElementById('sortSelect').value;
+      switch(sort) {
+        case 'price-low': filtered.sort((a,b) => a.price - b.price); break;
+        case 'price-high': filtered.sort((a,b) => b.price - a.price); break;
+        case 'rating': filtered.sort((a,b) => b.rating - a.rating); break;
+        case 'newest': filtered.sort((a,b) => b.id - a.id); break;
+        default: break;
+      }
+      return filtered;
+    }
+
+    function renderProducts() {
+      const items = getFilteredSorted();
+      const grid = document.getElementById('productGrid');
+      grid.innerHTML = items.map((p, i) => {
+        const stars = renderStars(p.rating);
+        const badgeColor = p.badge === 'New' ? 'bg-brand-mint text-brand-bg' : p.badge === 'Best Seller' ? 'bg-brand-gold text-brand-bg' : p.badge === 'Limited' ? 'bg-brand-coral text-white' : '';
+        return `
+          <div class="product-card bg-brand-card border border-brand-border rounded-2xl overflow-hidden slide-up" style="transition-delay:${Math.min(i * 0.06, 0.4)}s">
+            <div class="relative overflow-hidden aspect-[4/5]">
+              <img src="${p.img}" alt="${p.name}" class="card-img w-full h-full object-cover" loading="lazy" />
+              ${p.badge ? `<span class="absolute top-3 left-3 ${badgeColor} text-xs font-display font-bold px-3 py-1 rounded-full">${p.badge}</span>` : ''}
+              <button class="quick-add absolute bottom-3 right-3 w-11 h-11 rounded-full bg-brand-coral text-white flex items-center justify-center shadow-lg hover:brightness-110 transition-all" onclick="addToCart(products.find(x=>x.id===${p.id}))" aria-label="Add ${p.name} to cart">
+                <i class="fa-solid fa-plus text-sm"></i>
+              </button>
+            </div>
+            <div class="p-5">
+              <div class="text-xs text-brand-muted mb-1">${p.category}</div>
+              <h3 class="font-display font-bold text-lg mb-2 leading-snug">${p.name}</h3>
+              <div class="flex items-center justify-between">
+                <span class="font-display text-xl font-bold text-brand-coral">$${p.price}</span>
+                <div class="flex items-center gap-1">${stars}<span class="text-xs text-brand-muted ml-1">${p.rating}</span></div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      // Re-observe new slide-up elements
+      observeSlideUps();
+    }
+
+    function renderStars(rating) {
+      let html = '';
+      for (let i = 1; i <= 5; i++) {
+        html += i <= Math.floor(rating)
+          ? '<i class="fa-solid fa-star star-filled text-xs"></i>'
+          : '<i class="fa-solid fa-star star-empty text-xs"></i>';
+      }
+      return html;
+    }
+
+    function setCategory(cat) {
+      activeCategory = cat;
+      renderFilterPills();
+      renderProducts();
+    }
+
+    function filterByCategory(cat) {
+      activeCategory = cat;
+      renderFilterPills();
+      renderProducts();
+      document.getElementById('shop').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    /* ===================== CART ===================== */
+    function addToCart(product) {
+      const existing = cart.find(c => c.id === product.id);
+      if (existing) {
+        existing.qty++;
+      } else {
+        cart.push({ ...product, qty: 1 });
+      }
+      updateCartUI();
+      showToast(`Added "${product.name}" to cart`);
+    }
+
+    function removeFromCart(id) {
+      cart = cart.filter(c => c.id !== id);
+      updateCartUI();
+    }
+
+    function changeQty(id, delta) {
+      const item = cart.find(c => c.id === id);
+      if (!item) return;
+      item.qty += delta;
+      if (item.qty <= 0) {
+        removeFromCart(id);
+        return;
+      }
+      updateCartUI();
+    }
+
+    function updateCartUI() {
+      const badge = document.getElementById('cartBadge');
+      const totalQty = cart.reduce((s, c) => s + c.qty, 0);
+      if (totalQty > 0) {
+        badge.classList.remove('hidden');
+        badge.textContent = totalQty;
+      } else {
+        badge.classList.add('hidden');
+      }
+
+      const container = document.getElementById('cartItems');
+      const footer = document.getElementById('cartFooter');
+      if (cart.length === 0) {
+        container.innerHTML = `
+          <div class="flex flex-col items-center justify-center h-full text-center">
+            <i class="fa-solid fa-bag-shopping text-4xl text-brand-muted mb-4"></i>
+            <p class="font-display font-bold text-xl mb-2">Cart is Empty</p>
+            <p class="text-sm text-brand-muted">Start adding some items!</p>
+          </div>
+        `;
+        footer.classList.add('hidden');
+        return;
+      }
+
+      footer.classList.remove('hidden');
+      const total = cart.reduce((s, c) => s + c.price * c.qty, 0);
+      document.getElementById('cartTotal').textContent = `$${total}`;
+
+      container.innerHTML = cart.map(c => `
+        <div class="flex gap-4 bg-brand-card rounded-xl p-3 border border-brand-border">
+          <img src="${c.img}" alt="${c.name}" class="w-20 h-20 rounded-lg object-cover flex-shrink-0" />
+          <div class="flex-1 min-w-0">
+            <h4 class="font-display font-bold text-sm truncate">${c.name}</h4>
+            <div class="text-brand-coral font-display font-bold mt-1">$${c.price}</div>
+            <div class="flex items-center gap-2 mt-2">
+              <button onclick="changeQty(${c.id},-1)" class="w-7 h-7 rounded-lg bg-brand-surface border border-brand-border flex items-center justify-center hover:border-brand-coral transition-colors text-xs"><i class="fa-solid fa-minus"></i></button>
+              <span class="font-display font-bold text-sm w-6 text-center">${c.qty}</span>
+              <button onclick="changeQty(${c.id},1)" class="w-7 h-7 rounded-lg bg-brand-surface border border-brand-border flex items-center justify-center hover:border-brand-coral transition-colors text-xs"><i class="fa-solid fa-plus"></i></button>
+            </div>
+          </div>
+          <button onclick="removeFromCart(${c.id})" class="self-start text-brand-muted hover:text-brand-coral transition-colors" aria-label="Remove"><i class="fa-solid fa-xmark text-sm"></i></button>
+        </div>
+      `).join('');
+    }
+
+    function toggleCart() {
+      const overlay = document.getElementById('cartOverlay');
+      const drawer = document.getElementById('cartDrawer');
+      const isOpen = drawer.classList.contains('open');
+      if (isOpen) {
+        overlay.classList.remove('open');
+        drawer.classList.remove('open');
+      } else {
+        overlay.classList.add('open');
+        drawer.classList.add('open');
+      }
+    }
+
+    function checkout() {
+      const total = cart.reduce((s, c) => s + c.price * c.qty, 0);
+      cart = [];
+      updateCartUI();
+      toggleCart();
+      showToast(`Order placed! Total: $${total}. Thank you!`);
+    }
+
+    /* ===================== SEARCH ===================== */
+    function toggleSearch() {
+      const modal = document.getElementById('searchModal');
+      const isOpen = modal.classList.contains('open');
+      if (isOpen) {
+        modal.classList.remove('open');
+      } else {
+        modal.classList.add('open');
+        setTimeout(() => document.getElementById('searchInput').focus(), 100);
+      }
+    }
+
+    document.getElementById('searchInput').addEventListener('input', function() {
+      const q = this.value.toLowerCase().trim();
+      const results = document.getElementById('searchResults');
+      if (!q) { results.classList.add('hidden'); results.innerHTML = ''; return; }
+      const matches = products.filter(p => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q));
+      results.classList.remove('hidden');
+      if (matches.length === 0) {
+        results.innerHTML = '<div class="p-6 text-brand-muted text-center">No products found</div>';
+        return;
+      }
+      results.innerHTML = matches.map(p => `
+        <button onclick="addToCart(products.find(x=>x.id===${p.id}));toggleSearch()" class="w-full flex items-center gap-4 p-4 hover:bg-brand-card transition-colors text-left">
+          <img src="${p.img}" alt="${p.name}" class="w-12 h-12 rounded-lg object-cover" />
+          <div class="flex-1">
+            <div class="font-display font-bold text-sm">${p.name}</div>
+            <div class="text-xs text-brand-muted">${p.category} — $${p.price}</div>
+          </div>
+          <i class="fa-solid fa-plus text-brand-coral"></i>
+        </button>
+      `).join('');
+    });
+
+    // Close search on Escape
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        const searchModal = document.getElementById('searchModal');
+        if (searchModal.classList.contains('open')) toggleSearch();
+      }
+    });
+
+    /* ===================== MOBILE MENU ===================== */
+    function toggleMobileMenu() {
+      document.getElementById('mobileMenu').classList.toggle('hidden');
+    }
+
+    /* ===================== TOAST ===================== */
+    function showToast(msg) {
+      const container = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      el.className = 'toast bg-brand-card border border-brand-border rounded-xl px-5 py-3 shadow-xl flex items-center gap-3 max-w-sm';
+      el.innerHTML = `<i class="fa-solid fa-circle-check text-brand-mint"></i><span class="text-sm font-medium">${msg}</span>`;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 2800);
+    }
+
+    /* ===================== NEWSLETTER ===================== */
+    function handleNewsletter(e) {
+      e.preventDefault();
+      const email = document.getElementById('emailInput').value;
+      showToast(`Welcome! ${email} is now subscribed.`);
+      document.getElementById('emailInput').value = '';
+    }
+
+    /* ===================== SCROLL ANIMATIONS ===================== */
+    const slideObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+    function observeSlideUps() {
+      document.querySelectorAll('.slide-up:not(.visible)').forEach(el => slideObserver.observe(el));
+    }
+
+    /* ===================== NAV SCROLL EFFECT ===================== */
+    let lastScroll = 0;
+    window.addEventListener('scroll', () => {
+      const nav = document.getElementById('mainNav');
+      const scrollY = window.scrollY;
+      if (scrollY > 60) {
+        nav.style.background = 'rgba(12,12,12,0.85)';
+        nav.style.backdropFilter = 'blur(12px)';
+        nav.style.borderBottom = '1px solid rgba(42,42,42,0.5)';
+      } else {
+        nav.style.background = 'transparent';
+        nav.style.backdropFilter = 'none';
+        nav.style.borderBottom = 'none';
+      }
+      lastScroll = scrollY;
+    });
+
+    /* ===================== CURSOR GLOW (subtle) ===================== */
+    const cursorGlow = document.createElement('div');
+    cursorGlow.style.cssText = 'position:fixed;width:300px;height:300px;border-radius:50%;pointer-events:none;z-index:0;background:radial-gradient(circle,rgba(255,107,74,0.06) 0%,transparent 70%);transform:translate(-50%,-50%);transition:left 0.3s ease,top 0.3s ease;';
+    document.body.appendChild(cursorGlow);
+    document.addEventListener('mousemove', e => {
+      cursorGlow.style.left = e.clientX + 'px';
+      cursorGlow.style.top = e.clientY + 'px';
+    });
+
+    /* ===================== INIT ===================== */
+    renderFilterPills();
+    renderProducts();
+    updateCartUI();
+    observeSlideUps();
+  </script>
+</body>
+</html>
