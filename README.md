@@ -1,14 +1,9 @@
-https://movahedi1.github.io/Shop1/Shop
-
-
 # VELO — Curated Lifestyle Store 🛍️
 
 A modern, single-page e-commerce storefront built with vanilla JavaScript and Tailwind CSS. Features a fully functional cart, live search, category filtering, and smooth micro-interactions — all without any framework.
 
-![VELO Preview](./preview.png)
-
 ## 🔗 Live Demo
-[velo-store.netlify.app](https://your-demo-link.netlify.app)
+[velo-store.netlify.app](https://movahedi1.github.io/Shop1/Shop)
 
 ## ✨ Features
 
